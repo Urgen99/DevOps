@@ -1,9 +1,9 @@
 pipeline {
     agent any
     stages {
-        stage('UnitTest') {
+        stage('Buildapp') {
             steps {
-                echo "Hello, we are learning Jekins pipeline as a code"
+                sh "mvn -f jenkins/java-tomcat-sample/pom.xml clean package"
                 echo "Running Unitest"
             }
         }
