@@ -3,9 +3,9 @@ pipeline {
     stages {
         stage('Buildapp') {
             steps {
-                sh "mvn -f jenkins/java-tomcat-sample/pom.xml clean package"
+                sh 'mvn -f jenkins/java-tomcat-sample/pom.xml clean package'
                 echo "Running Unitest"
-                post{
+                post {
                     success {
                         echo " Archiving the Artifacts....."
                         archiveArtifacts artifacts: '**/*.war'
