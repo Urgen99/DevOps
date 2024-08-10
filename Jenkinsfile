@@ -5,6 +5,7 @@ pipeline {
             steps {
                 sh 'mvn -f jenkins/java-tomcat-sample/pom.xml clean package'
                 echo "Running Unitest"
+            }
                 post {
                     success {
                         echo " Archiving the Artifacts....."
