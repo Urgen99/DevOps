@@ -6,12 +6,10 @@ pipeline {
                 sh 'mvn -f jenkins/java-tomcat-sample/pom.xml clean package'
                 echo "Running Unitest"
             }
-                post {
-                    success {
-                        echo " Archiving the Artifacts....."
-                        archiveArtifacts artifacts: '**/*.war'
-                    
-                    }
+            post {
+                success {
+                    echo "Archiving the Artifacts....."
+                    archiveArtifacts artifacts: '**/*.war'
                 }
             }
         }
@@ -31,4 +29,4 @@ pipeline {
             }
         }    
     }
-
+}
