@@ -13,9 +13,7 @@ pipeline {
             }
         }
        stage('Create Tomcat Image') {
-               agent {
-                label 'ubuntu-slave'
-                }
+               agent any
             steps {
                 copyArtifacts filter: '**/*.war', fingerprintArtifacts: true, projectName: env.JOB_NAME, selector: specific(env.BUILD_NUMBER)
                 echo "Building docker image"
@@ -29,9 +27,7 @@ pipeline {
             }
         }
         stage('Deploy to QA Env') {
-                agent {
-                label 'ubuntu-slave'
-            }
+                agent any
             steps {
                 echo "Running app on QA env"
                 sh '''
