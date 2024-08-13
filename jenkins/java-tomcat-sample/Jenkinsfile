@@ -1,6 +1,6 @@
 pipeline {
     agent {
-        label 'builtinNode'
+        label 'built-in-node'
     }
     stages {
         stage('Build Application') {
@@ -14,58 +14,59 @@ pipeline {
                 }
             }
         }
-        stage('Create Tomcat Image') {
-            agent {
-                label 'testnode'
-            }
+       stage('Create Tomcat Image') {
+               agent {
+                label 'ubuntu-slave'
+                }
             steps {
                 copyArtifacts filter: '**/*.war', fingerprintArtifacts: true, projectName: env.JOB_NAME, selector: specific(env.BUILD_NUMBER)
                 echo "Building docker image"
                 sh '''
                 original_pwd=$(pwd -P)
                 cd jenkins/java-tomcat-sample
+                whoami
                 docker build -t localtomcatimg:$BUILD_NUMBER .
                 cd $original_pwd
                 sh '''
             }
         }
-        stage('Deploy to Stagging Env') {
-            agent {
-                label 'testnode'
+        stage('Deploy to QA Env') {
+                agent {
+                label 'ubuntu-slave'
             }
             steps {
-                echo "Running app on stagging env"
+                echo "Running app on QA env"
                 sh '''
-                docker stop tomcatInstanceStaging || true
-                docker rm tomcatInstanceStaging || true
-                docker run -itd --name tomcatInstanceStaging -p 8082:8080 localtomcatimg:$BUILD_NUMBER
+                docker stop tomcatInstanceQA || true
+                docker rm tomcatInstanceQA || true
+                docker run -itd --name tomcatInstanceQA -p 8082:8080 localtomcatimg:$BUILD_NUMBER
                 sh '''
             }
         }
-        stage('Deploy Production Environment') {
-            agent {
-                label 'testnode'
+        stage('Deploy Staging Environment') {
+                            agent {
+                label 'ubuntu-slave'
             }
             steps {
-                timeout(time:1, unit:'DAYS'){
-                input message:'Approve PRODUCTION Deployment?'
+                timeout(time:2, unit:'MINUTES'){
+                input message:'Approve STAGING Deployment?'
                 }
-                echo "Running app on Prod env"
+                echo "Running app on Staging env"
                 sh '''
-                docker stop tomcatInstanceProd || true
-                docker rm tomcatInstanceProd || true
-                docker run -itd --name tomcatInstanceProd -p 8083:8080 localtomcatimg:$BUILD_NUMBER
+                docker stop tomcatInstanceStagging || true
+                docker rm tomcatInstanceStagging || true
+                docker run -itd --name tomcatInstanceStagging -p 8083:8080 localtomcatimg:$BUILD_NUMBER
                 '''
             }
         }
     }
-    post { 
+ post { 
         always { 
             mail to: 'devopsuryaraj@gmail.com',
-            subject: "Job '${JOB_NAME}' (${BUILD_NUMBER}) is waiting for input",
+            subject: "Job '${JOB_NAME}' (${BUILD_NUMBER}) is running",
             body: "Please go to ${BUILD_URL} and verify the build"
         }
-        success {
+success {
             mail bcc: '', body: """Hi Team,
 
 Build #$BUILD_NUMBER is successful, please go through the url
@@ -77,7 +78,7 @@ and verify the details.
 Regards,
 DevOps Team""", cc: '', from: '', replyTo: '', subject: 'BUILD SUCCESS NOTIFICATION', to: 'devopsuryaraj@gmail.com'
         }
-        failure {
+failure {
             mail bcc: '', body: """Hi Team,
             
 Build #$BUILD_NUMBER is unsuccessful, please go through the url
