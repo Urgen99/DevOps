@@ -1,7 +1,5 @@
 pipeline {
-    agent any {
-        label 'built-in-node'
-    }
+    agent any 
     stages {
         stage('Build Application') {
             steps {
